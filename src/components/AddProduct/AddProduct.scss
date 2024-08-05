@@ -1,0 +1,96 @@
+@import '../../styles/base/variables';
+
+.add-product {
+  padding: 2rem;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid $border-color;
+
+    h1 {
+      font-size: 2rem;
+      color: $primary-color;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: $border-radius;
+        cursor: pointer;
+        transition: all $transition-speed ease;
+        font-weight: 600;
+
+        &[type="submit"] {
+          background-color: $secondary-color;
+          color: white;
+
+          &:hover {
+            background-color: darken($secondary-color, 10%);
+          }
+        }
+
+        &[type="button"] {
+          background-color: #e74c3c;
+          color: white;
+
+          &:hover {
+            background-color: darken(#e74c3c, 10%);
+          }
+        }
+      }
+    }
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    margin-top: 20px;
+
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: $primary-color;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        font-size: 1rem;
+        transition: border-color $transition-speed ease;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+        }
+      }
+
+      .description {
+        font-size: 0.9rem;
+        color: lighten($text-color, 20%);
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}

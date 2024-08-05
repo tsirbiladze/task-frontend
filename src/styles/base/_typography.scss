@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+@import 'variables';
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: $text-color;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
