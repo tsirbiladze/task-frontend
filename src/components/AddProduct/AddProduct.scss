@@ -2,6 +2,8 @@
 
 .add-product {
   padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 
   .header {
     display: flex;
@@ -10,10 +12,12 @@
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid $border-color;
+    height: 60px;
 
     h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
       color: $primary-color;
+      font-weight: 700;
     }
 
     .actions {
@@ -27,22 +31,33 @@
         cursor: pointer;
         transition: all $transition-speed ease;
         font-weight: 600;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &[type="submit"] {
           background-color: $secondary-color;
           color: white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
           &:hover {
             background-color: darken($secondary-color, 10%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
           }
         }
 
         &[type="button"] {
           background-color: #e74c3c;
           color: white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
           &:hover {
             background-color: darken(#e74c3c, 10%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
           }
         }
       }
@@ -57,40 +72,84 @@
 
   form {
     background-color: white;
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: $border-radius;
-    box-shadow: $box-shadow;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
 
     .form-group {
       margin-bottom: 1.5rem;
+      position: relative;
 
       label {
         display: block;
         margin-bottom: 0.5rem;
-        font-weight: 600;
+        font-weight: 500;
         color: $primary-color;
+      }
+
+      .input-wrapper {
+        position: relative;
       }
 
       input, select {
         width: 100%;
-        padding: 0.7rem;
-        border: 1px solid $border-color;
-        border-radius: $border-radius;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: all 0.3s ease;
         font-size: 1rem;
-        transition: border-color $transition-speed ease;
 
         &:focus {
           outline: none;
-          border-color: $primary-color;
+          border-color: $secondary-color;
+          box-shadow: 0 0 0 2px rgba($secondary-color, 0.2);
+        }
+
+        &.error {
+          border-color: #ff6b6b;
+          background-color: #fff0f0;
+        }
+
+        &.success {
+          border-color: #51cf66;
+          background-color: #f0fff0;
         }
       }
 
-      .description {
-        font-size: 0.9rem;
-        color: lighten($text-color, 20%);
-        margin-top: 0.5rem;
+      .error-message {
+        display: flex;
+        align-items: center;
+        color: #ff6b6b;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        animation: fadeIn 0.3s ease-in-out;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+
+        svg {
+          margin-right: 0.25rem;
+        }
+      }
+
+      .success-icon {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #51cf66;
       }
     }
+
+    .description {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-top: 0.5rem;
+    }
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

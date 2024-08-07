@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, checkSkuUniqueness } from '../../services/api';
+import { addProduct } from '../../services/api';
+import { FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import './AddProduct.scss';
 
@@ -23,44 +24,64 @@ const INITIAL_PRODUCT_STATE = {
 
 function AddProduct() {
   const [product, setProduct] = useState(INITIAL_PRODUCT_STATE);
-  const [error, setError] = useState('');
-  const [validationError, setValidationError] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setProduct(prevProduct => ({ ...prevProduct, [name]: value }));
+    
+    // Clear the error for the changed field
+    setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+
+    // Clear type-specific errors when changing product type
+    if (name === 'type') {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        attribute: '',
+        height: '',
+        width: '',
+        length: ''
+      }));
+    }
   }, []);
 
   const validateInputs = useCallback(() => {
-    if (!product.sku || !product.name || !product.price || !product.type) {
-      setError('Please, submit required data');
-      return false;
-    }
+    const newErrors = {};
 
-    if (product.type === PRODUCT_TYPES.FURNITURE && (!product.height || !product.width || !product.length)) {
-      setError('Please, provide dimensions');
-      return false;
-    }
+    if (!product.sku) newErrors.sku = 'SKU is required';
+    if (!product.name) newErrors.name = 'Name is required';
+    if (!product.price) newErrors.price = 'Price is required';
+    if (!product.type) newErrors.type = 'Type is required';
 
     if (isNaN(parseFloat(product.price)) || parseFloat(product.price) <= 0) {
-      setValidationError('Please, provide a valid positive number for price');
-      return false;
+      newErrors.price = 'Please provide a valid positive number for price';
     }
 
-    if (product.type === PRODUCT_TYPES.DVD && (isNaN(parseInt(product.attribute)) || parseInt(product.attribute) <= 0)) {
-      setValidationError('Please, provide a valid positive integer for size');
-      return false;
+    if (product.type === PRODUCT_TYPES.DVD) {
+      if (!product.attribute) {
+        newErrors.attribute = 'Size is required for DVD';
+      } else if (isNaN(parseInt(product.attribute)) || parseInt(product.attribute) <= 0) {
+        newErrors.attribute = 'Please provide a valid positive integer for size';
+      }
     }
 
-    if (product.type === PRODUCT_TYPES.BOOK && (isNaN(parseFloat(product.attribute)) || parseFloat(product.attribute) <= 0)) {
-      setValidationError('Please, provide a valid positive number for weight');
-      return false;
+    if (product.type === PRODUCT_TYPES.BOOK) {
+      if (!product.attribute) {
+        newErrors.attribute = 'Weight is required for Book';
+      } else if (isNaN(parseFloat(product.attribute)) || parseFloat(product.attribute) <= 0) {
+        newErrors.attribute = 'Please provide a valid positive number for weight';
+      }
     }
 
-    setError('');
-    setValidationError('');
-    return true;
+    if (product.type === PRODUCT_TYPES.FURNITURE) {
+      if (!product.height) newErrors.height = 'Height is required for Furniture';
+      if (!product.width) newErrors.width = 'Width is required for Furniture';
+      if (!product.length) newErrors.length = 'Length is required for Furniture';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }, [product]);
 
   const handleSubmit = useCallback(async (e) => {
@@ -75,17 +96,9 @@ function AddProduct() {
         width: product.width,
         length: product.length
       });
-    } else if (product.type === PRODUCT_TYPES.DVD || product.type === PRODUCT_TYPES.BOOK) {
-      productToSubmit.attribute = product.attribute || '0';
     }
 
     try {
-      const isUnique = await checkSkuUniqueness(productToSubmit.sku);
-      if (!isUnique) {
-        setError('SKU must be unique. This SKU already exists.');
-        return;
-      }
-
       await addProduct({
         ...productToSubmit,
         price: parseFloat(productToSubmit.price),
@@ -93,7 +106,11 @@ function AddProduct() {
       navigate('/');
     } catch (error) {
       console.error('Error adding product:', error);
-      setError(error.response?.data?.error || 'Failed to add product. Please try again.');
+      setErrors(prev => ({ 
+        ...prev, 
+        submit: error.response?.data?.error || 'Failed to add product. Please try again.',
+        skuError: true
+      }));
     }
   }, [product, validateInputs, navigate]);
 
@@ -103,7 +120,19 @@ function AddProduct() {
         return (
           <div className="form-group">
             <label htmlFor="size">Size (MB)</label>
-            <input id="size" name="attribute" type="number" value={product.attribute} onChange={handleChange} required />
+            <div className="input-wrapper">
+              <input id="size" name="attribute" type="number" value={product.attribute} onChange={handleChange} required className={errors.attribute ? 'error' : product.attribute ? 'success' : ''} />
+              {errors.attribute && (
+                <span className="error-message">
+                  <FaExclamationCircle /> {errors.attribute}
+                </span>
+              )}
+              {!errors.attribute && product.attribute && (
+                <span className="success-icon">
+                  <FaCheckCircle />
+                </span>
+              )}
+            </div>
             <p className="description">Please, provide size</p>
           </div>
         );
@@ -111,7 +140,19 @@ function AddProduct() {
         return (
           <div className="form-group">
             <label htmlFor="weight">Weight (KG)</label>
-            <input id="weight" name="attribute" type="number" value={product.attribute} onChange={handleChange} required />
+            <div className="input-wrapper">
+              <input id="weight" name="attribute" type="number" value={product.attribute} onChange={handleChange} required className={errors.attribute ? 'error' : product.attribute ? 'success' : ''} />
+              {errors.attribute && (
+                <span className="error-message">
+                  <FaExclamationCircle /> {errors.attribute}
+                </span>
+              )}
+              {!errors.attribute && product.attribute && (
+                <span className="success-icon">
+                  <FaCheckCircle />
+                </span>
+              )}
+            </div>
             <p className="description">Please, provide weight</p>
           </div>
         );
@@ -120,15 +161,51 @@ function AddProduct() {
           <>
             <div className="form-group">
               <label htmlFor="height">Height (CM)</label>
-              <input id="height" name="height" type="number" value={product.height} onChange={handleChange} required />
+              <div className="input-wrapper">
+                <input id="height" name="height" type="number" value={product.height} onChange={handleChange} required className={errors.height ? 'error' : product.height ? 'success' : ''} />
+                {errors.height && (
+                  <span className="error-message">
+                    <FaExclamationCircle /> {errors.height}
+                  </span>
+                )}
+                {!errors.height && product.height && (
+                  <span className="success-icon">
+                    <FaCheckCircle />
+                  </span>
+                )}
+              </div>
             </div>
             <div className="form-group">
               <label htmlFor="width">Width (CM)</label>
-              <input id="width" name="width" type="number" value={product.width} onChange={handleChange} required />
+              <div className="input-wrapper">
+                <input id="width" name="width" type="number" value={product.width} onChange={handleChange} required className={errors.width ? 'error' : product.width ? 'success' : ''} />
+                {errors.width && (
+                  <span className="error-message">
+                    <FaExclamationCircle /> {errors.width}
+                  </span>
+                )}
+                {!errors.width && product.width && (
+                  <span className="success-icon">
+                    <FaCheckCircle />
+                  </span>
+                )}
+              </div>
             </div>
             <div className="form-group">
               <label htmlFor="length">Length (CM)</label>
-              <input id="length" name="length" type="number" value={product.length} onChange={handleChange} required />
+              <div className="input-wrapper">
+                <input id="length" name="length" type="number" value={product.length} onChange={handleChange} required className={errors.length ? 'error' : product.length ? 'success' : ''} />
+                {errors.length && (
+                  <span className="error-message">
+                    <FaExclamationCircle /> {errors.length}
+                  </span>
+                )}
+                {!errors.length && product.length && (
+                  <span className="success-icon">
+                    <FaCheckCircle />
+                  </span>
+                )}
+              </div>
             </div>
             <p className="description">Please, provide dimensions</p>
           </>
@@ -138,39 +215,67 @@ function AddProduct() {
     }
   };
 
+  const renderInput = (name, label, type = 'text') => (
+    <div className="form-group">
+      <label htmlFor={name}>{label}</label>
+      <div className="input-wrapper">
+        <input
+          id={name}
+          name={name}
+          type={type}
+          value={product[name]}
+          onChange={handleChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          }}
+          className={errors[name] || (name === 'sku' && errors.skuError) ? 'error' : product[name] ? 'success' : ''}
+        />
+
+        {!errors[name] && product[name] && !errors.skuError && (
+          <span className="success-icon">
+            <FaCheckCircle />
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="add-product">
       <div className="header">
         <h1>Product Add</h1>
         <div className="actions">
-          <button type="submit" form="product_form">Save</button>
+          <button type="submit" form="product_form" onClick={handleSubmit}>Save</button>
           <button type="button" onClick={() => navigate('/')}>Cancel</button>
         </div>
       </div>
       <div className="form-container">
-        {error && <ErrorMessage message={error} />}
-        {validationError && <ErrorMessage message={validationError} />}
+        {errors.submit && <ErrorMessage message={errors.submit} />}
         <form id="product_form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="sku">SKU</label>
-            <input id="sku" name="sku" value={product.sku} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input id="name" name="name" value={product.name} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="price">Price ($)</label>
-            <input id="price" name="price" type="number" value={product.price} onChange={handleChange} required />
-          </div>
+          {renderInput('sku', 'SKU')}
+          {renderInput('name', 'Name')}
+          {renderInput('price', 'Price ($)', 'number')}
           <div className="form-group">
             <label htmlFor="productType">Type Switcher</label>
-            <select id="productType" name="type" value={product.type} onChange={handleChange} required>
+            <select
+              id="productType"
+              name="type"
+              value={product.type}
+              onChange={handleChange}
+              className={errors.type ? 'error' : product.type ? 'success' : ''}
+            >
               <option value="">Type Switcher</option>
               <option value="dvd">DVD</option>
               <option value="book">Book</option>
               <option value="furniture">Furniture</option>
             </select>
+            {errors.type && (
+              <span className="error-message">
+                <FaExclamationCircle /> {errors.type}
+              </span>
+            )}
           </div>
           {renderProductTypeFields()}
         </form>
